@@ -13,7 +13,8 @@ def dict_factory(cursor, row):
         d[col[0]] = row[idx]
     return d
 
-class user_info(object):
+
+class UserInfo(object):
     def __init__(self, id, username, password):
         self.id = id
         self.username = username
@@ -29,7 +30,7 @@ def fetch_users():
         new_data = []
 
         for data in users:
-            new_data.append(user_info(data[0], data[3], data[4]))
+            new_data.append(UserInfo(data[0], data[3], data[4]))
     return new_data
 
 
@@ -65,19 +66,19 @@ def identity(payload):
     return username_table.get(user_id, None)
 
 
-def comicbook_table():
+def comics_table():
     with sqlite3.connect('comicbook_store.db') as conn:
-        conn.execute("CREATE TABLE IF NOT EXISTS comicbooks (id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        conn.execute("CREATE TABLE IF NOT EXISTS comics (id INTEGER PRIMARY KEY AUTOINCREMENT,"
                      "name TEXT NOT NULL,"
                      "price TEXT NOT NULL,"
                      "description TEXT NOT NULL,"
                      "category TEXT NOT NULL,"
                      "image TEXT NOT NULL)")
-        print("comicbooks table create successfully.")
+        print("comics table create successfully.")
 
 
 init_usertable()
-comicbook_table()
+comics_table()
 
 users = fetch_users()
 
@@ -122,8 +123,37 @@ def user_registration():
     return response
 
 
-@app.route('/adding_comic/', methods=["POST"])
-def add_comicbooks():
+#   Route for the user to login.
+@app.route("/user_login/", methods=["POST"])
+#   Function to register user
+def user_login():
+    response = {}
+
+    if request.method == "POST":
+        entered_username = request.json['username']
+        entered_password = request.json['password']
+
+        with sqlite3.connect("comicbook_store.db") as connection:
+
+            cursor = connection.cursor()
+            cursor.execute("SELECT * FROM user WHERE username=? AND password=?", (entered_username,
+                                                                                   entered_password))
+            table_info = cursor.fetchone()
+
+            response["status_code"] = 200
+            response["message"] = "User logged in successfully"
+            response["user"] = table_info
+        return response
+
+    else:
+        response["status_code"] = 404
+        response["user"] = "user not found"
+        response["message"] = "User logged in unsuccessfully"
+    return response
+
+
+@app.route('/adding_comics/', methods=["POST"])
+def add_comics():
     response = {}
 
     if request.method == "POST":
@@ -135,7 +165,7 @@ def add_comicbooks():
 
         with sqlite3.connect('comicbook_store.db') as conn:
                 cursor = conn.cursor()
-                cursor.execute("INSERT INTO comicbooks("
+                cursor.execute("INSERT INTO comics("
                                "name,"
                                "price,"
                                "description,"
@@ -143,17 +173,17 @@ def add_comicbooks():
                                "image) VALUES(?, ?, ?, ?, ?)", (name, price, description, category, image))
                 conn.commit()
                 response["status_code"] = 201
-                response['description'] = "Comicbook added successfully"
+                response['description'] = "Comics added successfully"
         return response
 
 
-@app.route('/delete_comic/<int:id>/')
-def delete_products(comic_id):
+@app.route('/delete_comics/<int:product_id>/')
+def delete_products(comics_id):
     response = {}
 
     with sqlite3.connect('comicbook_store.db') as connection:
         cursor = connection.cursor()
-        cursor.execute("DELETE FROM comicbooks WHERE id=" + str(comic_id))
+        cursor.execute("DELETE FROM comics WHERE id=" + str(comics_id))
         connection.commit()
         response['status code'] = 200
         response['message'] = "Comic deleted."
@@ -161,18 +191,18 @@ def delete_products(comic_id):
 
 
 @app.route('/view_comics/', methods=["GET"])
-def view_products():
+def view_comics():
     response = {}
     if request.method == "GET":
         with sqlite3.connect('comicbook_store.db') as conn:
             conn.row_factory = dict_factory
             cursor = conn.cursor()
-            cursor.execute('SELECT * FROM comicbooks')
+            cursor.execute('SELECT * FROM comics')
             conn.commit()
 
-            products = cursor.fetchall()
+            comics = cursor.fetchall()
             response["status_code"] = 201
-            response["products"] = products
+            response["comics"] = comics
             response['description'] = "Here are the comics"
 
     return response
@@ -193,7 +223,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comicbooks SET name =? WHERE id", (put_data["name"], id))
+                    cursor.execute("UPDATE comics SET name =? WHERE id", (put_data["name"], id))
 
                     conn.commit()
                     response['message'] = "Update was successful"
@@ -204,7 +234,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comicbooks SET price =? WHERE id =?", (put_data["price"], id))
+                    cursor.execute("UPDATE comics SET price =? WHERE id =?", (put_data["price"], id))
 
                     conn.commit()
                     response['message'] = "Update was successful"
@@ -215,7 +245,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comicbooks SET description =? WHERE id", (put_data["description"], id))
+                    cursor.execute("UPDATE comics SET description =? WHERE id", (put_data["description"], id))
 
                     conn.commit()
                     response['message'] = "Update was successful"
@@ -226,7 +256,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comicbooks SET category =? WHERE id", (put_data["category"], id))
+                    cursor.execute("UPDATE comics SET category =? WHERE id", (put_data["category"], id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
@@ -236,7 +266,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comicbooks SET image =? WHERE id", (put_data["image"], id))
+                    cursor.execute("UPDATE comics SET image =? WHERE id", (put_data["image"], id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
@@ -250,12 +280,12 @@ def view_comic(comic_id):
     with sqlite3.connect('comicbook_store.db') as conn:
         conn.row_factory = dict_factory
         cursor = conn.cursor()
-        cursor.execute('SELECT * FROM comicbooks WHERE id =? ', (str(comic_id),))
+        cursor.execute('SELECT * FROM comics WHERE id =? ', (str(comic_id),))
         product = cursor.fetchone()
         conn.commit()
 
         response['status code'] = 201
-        response['description'] = "Here are the comics"
+        response['description'] = "Here is the selected comic"
         response['data'] = product
 
     return response
