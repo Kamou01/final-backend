@@ -177,7 +177,7 @@ def add_comics():
         return response
 
 
-@app.route('/delete_comics/<int:product_id>/')
+@app.route('/delete_comics/<int:comics_id>/')
 def delete_products(comics_id):
     response = {}
 
