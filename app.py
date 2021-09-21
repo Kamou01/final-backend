@@ -223,7 +223,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comics SET name =? WHERE id", (put_data["name"], id))
+                    cursor.execute("UPDATE comics SET name=? WHERE id=?", (put_data["name"], id))
 
                     conn.commit()
                     response['message'] = "Update was successful"
@@ -234,7 +234,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comics SET price =? WHERE id =?", (put_data["price"], id))
+                    cursor.execute("UPDATE comics SET price=? WHERE id=?", (put_data["price"], id))
 
                     conn.commit()
                     response['message'] = "Update was successful"
@@ -245,7 +245,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comics SET description =? WHERE id", (put_data["description"], id))
+                    cursor.execute("UPDATE comics SET description=? WHERE id=?", (put_data["description"], id))
 
                     conn.commit()
                     response['message'] = "Update was successful"
@@ -256,7 +256,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comics SET category =? WHERE id", (put_data["category"], id))
+                    cursor.execute("UPDATE comics SET category =? WHERE id=?", (put_data["category"], id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
@@ -266,7 +266,7 @@ def update_comics(id):
 
                 with sqlite3.connect('comicbook_store.db') as connection:
                     cursor = connection.cursor()
-                    cursor.execute("UPDATE comics SET image =? WHERE id", (put_data["image"], id))
+                    cursor.execute("UPDATE comics SET image =? WHERE id=?", (put_data["image"], id))
                     conn.commit()
                     response['message'] = "Update was successful"
                     response['status_code'] = 200
